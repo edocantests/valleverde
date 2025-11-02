@@ -166,10 +166,10 @@ def generar_recibo():
     
     try:
         # Intentar cargar fuentes del sistema
-        fuente_titulo = ImageFont.truetype("arial.ttf", 24)
-        fuente_subtitulo = ImageFont.truetype("arial.ttf", 22)
-        fuente_normal = ImageFont.truetype("arial.ttf", 20)
-        fuente_pequena = ImageFont.truetype("arial.ttf", 20)
+        fuente_titulo = ImageFont.truetype("arial.ttf", 32)
+        fuente_subtitulo = ImageFont.truetype("arial.ttf", 30)
+        fuente_normal = ImageFont.truetype("arial.ttf", 30)
+        fuente_pequena = ImageFont.truetype("arial.ttf", 30)
     except:
         # Fuente por defecto si no encuentra Arial
         fuente_titulo = ImageFont.load_default()
@@ -207,7 +207,7 @@ def generar_recibo():
     y_pos += 40
     
     # Línea divisoria
-    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=2)
+    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=1)
     y_pos += 30
     
     # Datos del pago
@@ -221,7 +221,7 @@ def generar_recibo():
     y_pos += 40
     
     # Línea divisoria
-    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=2)
+    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=1)
     y_pos += 30
     
     # Monto
@@ -233,17 +233,12 @@ def generar_recibo():
         y_pos += 40
     
     # Línea divisoria
-    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=2)
+    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=1)
     y_pos += 40
     
     # Recibido por
     draw.text((50, y_pos), f"Recibido por: {recibido_por}", fill='black', font=fuente_normal)
     y_pos += 80
-    
-    # Firma
-    draw.line([(50, y_pos), (300, y_pos)], fill='black', width=1)
-    y_pos += 10
-    draw.text((50, y_pos), "Firma y Sello", fill='black', font=fuente_pequena)
     
     return recibo
 
