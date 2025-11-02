@@ -98,104 +98,97 @@ def generar_pdf(datos):
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    # Logo y encabezado alineados
-    y_position = height - 100
+    # Coordenadas y tamaños del logo
+    logo_width = 90
+    logo_height = 60
+    logo_x = 50
+    logo_y = height - 80  # base para el logo
+
+    # Dibujar logo (si existe)
     if st.session_state.logo:
         try:
             logo_reader = ImageReader(st.session_state.logo)
-            c.drawImage(logo_reader, 50, y_position - 10, width=90, height=60, preserveAspectRatio=True)
+            c.drawImage(logo_reader, logo_x, logo_y, width=logo_width, height=logo_height, preserveAspectRatio=True)
         except:
             pass
 
-    # Encabezado del condominio (alineado con logo)
+    # Encabezado del condominio alineado a la derecha del logo
+    header_x = logo_x + logo_width + 20
+    header_top = logo_y + logo_height - 10  # punto de referencia superior para el texto del header
+
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(160, y_position + 30, "Asociación Civil Valle Verde")
+    c.drawString(header_x, header_top, "Asociación Civil Valle Verde")
 
     c.setFont("Helvetica", 10)
-    c.drawString(160, y_position + 15, "Calle 7 N° 79, Valle Verde, Morita 1")
-    c.drawString(160, y_position, "Turmero, Estado Aragua")
-    c.drawString(160, y_position - 15, "RIF: J-298826738")
+    c.drawString(header_x, header_top - 16, "Calle 7 N° 79, Valle Verde, Morita 1")
+    c.drawString(header_x, header_top - 30, "Turmero, Estado Aragua")
+    c.drawString(header_x, header_top - 44, "RIF: J-298826738")
 
-    # Línea separadora
-    y_position -= 40
+    # Línea separadora (por debajo del logo y del encabezado)
+    y_position = logo_y - 20
     c.line(50, y_position, width - 50, y_position)
-    
-    # Encabezado del condominio
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(200, y_position, "Asociación Civil Valle Verde")
-    
-    c.setFont("Helvetica", 10)
-    y_position -= 20
-    c.drawString(200, y_position, "Calle 7 N° 79, Valle Verde, Morita 1")
-    y_position -= 15
-    c.drawString(200, y_position, "Turmero, Estado Aragua")
-    y_position -= 15
-    c.drawString(200, y_position, "RIF: J-298826738")
-    
-    # Línea separadora
-    y_position -= 30
-    c.line(50, y_position, width - 50, y_position)
-    
+
     # Título del recibo
     y_position -= 40
     c.setFont("Helvetica-Bold", 18)
     c.drawCentredString(width / 2, y_position, "RECIBO DE PAGO")
-    
+
     # Número de recibo
     y_position -= 30
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, y_position, f"Recibo N°: {datos['numero_recibo']}")
-    
+
     # Información del recibo
     y_position -= 40
     c.setFont("Helvetica-Bold", 11)
     c.drawString(50, y_position, "Datos del Pago:")
-    
+
     y_position -= 25
     c.setFont("Helvetica", 11)
     c.drawString(70, y_position, f"Propietario: {datos['propietario']}")
-    
+
     y_position -= 20
     c.drawString(70, y_position, f"Casa N°: {datos['numero_casa']}")
-    
+
     y_position -= 20
     c.drawString(70, y_position, f"Fecha de Pago: {datos['dia_pago']}")
-    
+
     y_position -= 20
     c.drawString(70, y_position, f"Mes Cancelado: {datos['mes_cancelado']}")
-    
+
     y_position -= 20
     c.drawString(70, y_position, f"Año Cancelado: {datos['año_cancelado']}")
-    
+
     y_position -= 30
     c.setFont("Helvetica-Bold", 14)
     c.drawString(70, y_position, f"Monto Pagado: Bs. {datos['monto_pago']}")
-    
-    if datos['referencia']:
+
+    if datos.get('referencia'):
         y_position -= 25
         c.setFont("Helvetica", 11)
         c.drawString(70, y_position, f"Referencia: {datos['referencia']}")
-    
+
     # Recibido por
     y_position -= 40
     c.setFont("Helvetica-Bold", 11)
     c.drawString(70, y_position, f"Recibido por: {datos['recibido_por']}")
-    
+
     # Línea de firma
     y_position -= 60
     c.line(70, y_position, 300, y_position)
     y_position -= 15
     c.setFont("Helvetica", 9)
     c.drawString(70, y_position, "Firma y Sello")
-    
+
     # Nota al pie
-    y_position = 50
+    footer_y = 50
     c.setFont("Helvetica-Oblique", 8)
-    c.drawCentredString(width / 2, y_position, "Gracias por su pago puntual")
-    
+    c.drawCentredString(width / 2, footer_y, "Gracias por su pago puntual")
+
     c.save()
     buffer.seek(0)
     return buffer
+
 
 # Título principal
 st.title("🏘️ Sistema de Recibos - Valle Verde")
