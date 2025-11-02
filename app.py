@@ -166,10 +166,10 @@ def generar_recibo():
     
     try:
         # Intentar cargar fuentes del sistema
-        fuente_titulo = ImageFont.truetype("arial.ttf", 20)
-        fuente_subtitulo = ImageFont.truetype("arial.ttf", 16)
-        fuente_normal = ImageFont.truetype("arial.ttf", 14)
-        fuente_pequena = ImageFont.truetype("arial.ttf", 12)
+        fuente_titulo = ImageFont.truetype("arial.ttf", 24)
+        fuente_subtitulo = ImageFont.truetype("arial.ttf", 22)
+        fuente_normal = ImageFont.truetype("arial.ttf", 20)
+        fuente_pequena = ImageFont.truetype("arial.ttf", 20)
     except:
         # Fuente por defecto si no encuentra Arial
         fuente_titulo = ImageFont.load_default()
@@ -189,7 +189,7 @@ def generar_recibo():
         x_texto = 50
     
     # Encabezado
-    draw.text((x_texto, y_pos), "ASOCIACIÓN CIVIL VALLE VERDE", fill='black', font=fuente_titulo)
+    draw.text((x_texto, y_pos), "ASOCIACION CIVIL VALLE VERDE", fill='black', font=fuente_titulo)
     y_pos += 30
     draw.text((x_texto, y_pos), "Calle 7 N° 79, Valle Verde, Morita 1", fill='black', font=fuente_pequena)
     y_pos += 20
@@ -217,7 +217,7 @@ def generar_recibo():
     y_pos += 30
     draw.text((50, y_pos), f"Fecha de Pago: {dia_pago:02d}/{mes_num:02d}/{año_cancelado}", fill='black', font=fuente_normal)
     y_pos += 30
-    draw.text((50, y_pos), f"Período Cancelado: {mes_cancelado} {año_cancelado}", fill='black', font=fuente_normal)
+    draw.text((50, y_pos), f"Periodo Cancelado: {mes_cancelado} {año_cancelado}", fill='black', font=fuente_normal)
     y_pos += 40
     
     # Línea divisoria
