@@ -297,8 +297,8 @@ with col5:
     dia_pago = st.date_input("Fecha del pago", datetime.now(), label_visibility="collapsed")
 
 with col6:
-    st.markdown("#### Monto del Pago (Bs.)")
-    monto_pago = st.number_input("Monto en bolívares", min_value=0.0, step=0.01, format="%.2f", label_visibility="collapsed")
+    st.markdown("#### Monto del Pago")
+    monto_pago = st.number_input("Monto", min_value=0.0, step=0.01, format="%.2f", label_visibility="collapsed")
 
 # Fila 4: Referencia
 st.markdown("#### Referencia del Pago")
