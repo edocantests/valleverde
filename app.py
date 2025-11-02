@@ -13,16 +13,16 @@ st.set_page_config(
 # CSS personalizado
 st.markdown("""
     <style>
-    .stApp {
+    .main {
         background-color: white;
     }
     .stButton>button {
         background-color: #98D8C8;
         color: black;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 5px;
         font-weight: bold;
+        border: none;
+        padding: 0.5rem 2rem;
+        border-radius: 5px;
     }
     .stButton>button:hover {
         background-color: #7BC4B4;
@@ -30,251 +30,265 @@ st.markdown("""
     h1, h2, h3 {
         color: black;
     }
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: black;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
     .footer {
         text-align: center;
-        margin-top: 50px;
         color: #666;
-        font-size: 12px;
+        font-size: 0.9rem;
+        margin-top: 3rem;
+        padding-top: 1rem;
+        border-top: 1px solid #ddd;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# Título
-st.title("🏠 Sistema de Recibos")
-st.subheader("Asociación Civil Valle Verde")
+# Título principal
+st.title("🏠 Sistema de Recibos - Valle Verde")
 
 # Inicializar session state
-if 'propietarios_dict' not in st.session_state:
-    st.session_state.propietarios_dict = {}
-if 'logo_img' not in st.session_state:
-    st.session_state.logo_img = None
+if 'propietarios' not in st.session_state:
+    st.session_state.propietarios = [
+        "Juan Pérez",
+        "María González",
+        "Carlos Rodríguez",
+        "Ana Martínez",
+        "Luis Fernández"
+    ]
 
-# Sidebar para gestión de datos
+# Sidebar para gestión de propietarios
 with st.sidebar:
-    st.header("⚙️ Configuración")
+    st.header("📋 Gestión de Propietarios")
     
-    # Cargar lista de propietarios desde TXT
-    st.subheader("Cargar Propietarios")
-    archivo_txt = st.file_uploader("Subir archivo TXT con propietarios", type=['txt'])
-    if archivo_txt:
-        contenido = archivo_txt.read().decode('utf-8')
-        lineas = contenido.split('\n')
-        propietarios_temp = {}
-        
-        for linea in lineas[1:]:  # Saltar encabezado
-            if linea.strip():
-                partes = linea.split('\t')
-                if len(partes) >= 2:
-                    casa = partes[0].strip()
-                    propietario = partes[1].strip().rstrip(',')
-                    if casa and propietario:
-                        propietarios_temp[casa] = propietario
-        
-        st.session_state.propietarios_dict = propietarios_temp
-        st.success(f"✅ {len(propietarios_temp)} propietarios cargados")
+    # Mostrar lista actual
+    st.markdown("**Lista actual:**")
+    for prop in st.session_state.propietarios:
+        st.text(f"• {prop}")
     
-    # Agregar propietario manual
+    st.markdown("---")
+    
+    # Agregar nuevo propietario
     st.subheader("Agregar Propietario")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        nueva_casa_manual = st.text_input("Casa", key="casa_manual")
-    with col_b:
-        nuevo_propietario_manual = st.text_input("Propietario", key="prop_manual")
-    
-    if st.button("➕ Agregar", use_container_width=True):
-        if nueva_casa_manual and nuevo_propietario_manual:
-            st.session_state.propietarios_dict[nueva_casa_manual] = nuevo_propietario_manual
-            st.success(f"✅ Casa {nueva_casa_manual} agregada")
+    nuevo_prop = st.text_input("Nombre completo")
+    if st.button("➕ Agregar", key="add_prop"):
+        if nuevo_prop and nuevo_prop not in st.session_state.propietarios:
+            st.session_state.propietarios.append(nuevo_prop)
+            st.success(f"✓ {nuevo_prop} agregado")
             st.rerun()
     
-    # Cargar logo
-    st.subheader("Logo del Condominio")
-    logo_file = st.file_uploader("Subir logo (PNG/JPG)", type=['png', 'jpg', 'jpeg'])
-    if logo_file:
-        st.session_state.logo_img = Image.open(logo_file)
-        st.image(st.session_state.logo_img, width=100)
+    # Eliminar propietario
+    st.subheader("Eliminar Propietario")
+    prop_eliminar = st.selectbox("Seleccionar", st.session_state.propietarios, key="del_select")
+    if st.button("🗑️ Eliminar", key="del_prop"):
+        st.session_state.propietarios.remove(prop_eliminar)
+        st.success(f"✓ {prop_eliminar} eliminado")
+        st.rerun()
 
-# Formulario principal
-st.header("📝 Generar Recibo")
+# Sección principal
+st.markdown("---")
+
+# Logo del condominio
+st.markdown('<div class="section-title">Logo del Condominio</div>', unsafe_allow_html=True)
+logo_file = st.file_uploader("Cargar logo (PNG o JPG)", type=['png', 'jpg', 'jpeg'])
+
+st.markdown("---")
+
+# Formulario de recibo
+st.header("📝 Datos del Recibo")
 
 col1, col2 = st.columns(2)
 
 with col1:
-    # Número de casa
-    tipo_casa = st.radio("Número de casa:", ["Seleccionar de lista", "Ingresar manualmente"], horizontal=True)
-    if tipo_casa == "Seleccionar de lista":
-        casas_disponibles = sorted(st.session_state.propietarios_dict.keys(), key=lambda x: int(x) if x.isdigit() else 0)
-        if casas_disponibles:
-            num_casa = st.selectbox("Seleccione casa:", casas_disponibles)
-            propietario_auto = st.session_state.propietarios_dict.get(num_casa, "")
-        else:
-            st.warning("No hay casas cargadas")
-            num_casa = ""
-            propietario_auto = ""
+    st.markdown('<div class="section-title">Propietario</div>', unsafe_allow_html=True)
+    tipo_prop = st.radio("", ["Seleccionar de lista", "Ingresar manualmente"], label_visibility="collapsed", horizontal=True)
+    
+    if tipo_prop == "Seleccionar de lista":
+        propietario = st.selectbox("", st.session_state.propietarios, label_visibility="collapsed")
     else:
-        num_casa = st.text_input("Número de casa:")
-        propietario_auto = st.session_state.propietarios_dict.get(num_casa, "")
-    
-    # Propietario
-    tipo_propietario = st.radio("Propietario:", ["Automático", "Ingresar manualmente"], horizontal=True)
-    if tipo_propietario == "Automático":
-        propietario = st.text_input("Propietario (automático):", value=propietario_auto, disabled=False)
-    else:
-        propietario = st.text_input("Nombre del propietario:")
-    
-    # Día del pago
-    dia_pago = st.number_input("Día del pago:", min_value=1, max_value=31, value=datetime.now().day)
-    
-    # Monto del pago
-    monto_pago = st.number_input("Monto del pago (Bs.):", min_value=0.0, step=0.01, format="%.2f")
+        propietario = st.text_input("", placeholder="Nombre del propietario", label_visibility="collapsed")
 
 with col2:
-    # Mes cancelado
+    st.markdown('<div class="section-title">Número de Casa</div>', unsafe_allow_html=True)
+    tipo_casa = st.radio("", ["Lista predefinida", "Ingresar manualmente"], label_visibility="collapsed", horizontal=True, key="radio_casa")
+    
+    if tipo_casa == "Lista predefinida":
+        casas = [f"Casa {i}" for i in range(1, 51)]
+        num_casa = st.selectbox("", casas, label_visibility="collapsed")
+    else:
+        num_casa = st.text_input("", placeholder="Ej: Casa 15", label_visibility="collapsed", key="casa_manual")
+
+col3, col4 = st.columns(2)
+
+with col3:
+    st.markdown('<div class="section-title">Día del Pago</div>', unsafe_allow_html=True)
+    dia_pago = st.number_input("", min_value=1, max_value=31, value=datetime.now().day, label_visibility="collapsed")
+
+with col4:
+    st.markdown('<div class="section-title">Monto del Pago (Bs.)</div>', unsafe_allow_html=True)
+    monto = st.number_input("", min_value=0.0, step=0.01, format="%.2f", label_visibility="collapsed")
+
+col5, col6 = st.columns(2)
+
+with col5:
+    st.markdown('<div class="section-title">Mes Cancelado</div>', unsafe_allow_html=True)
     meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
              "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-    mes_cancelado = st.selectbox("Mes cancelado:", meses, index=datetime.now().month - 1)
-    
-    # Año cancelado
-    anio_cancelado = st.selectbox("Año cancelado:", list(range(2025, 2031)), index=0)
-    
-    # Recibido por (fijo)
-    recibido_por = st.text_input("Recibido por:", value="Eleida Ontiveros", disabled=True)
-    
-    # Referencia del pago
-    referencia_pago = st.text_input("Referencia del pago:")
+    mes_cancelado = st.selectbox("", meses, label_visibility="collapsed")
+
+with col6:
+    st.markdown('<div class="section-title">Año Cancelado</div>', unsafe_allow_html=True)
+    anio_cancelado = st.selectbox("", list(range(2025, 2031)), label_visibility="collapsed")
+
+st.markdown('<div class="section-title">Referencia del Pago</div>', unsafe_allow_html=True)
+referencia = st.text_input("", placeholder="Ej: Transferencia, Pago móvil, Efectivo", label_visibility="collapsed", key="ref_pago")
 
 # Generar número de recibo automático
-mes_num = str(meses.index(mes_cancelado) + 1).zfill(2)
-num_recibo = f"VV-{mes_num}-{anio_cancelado}-{num_casa}"
-st.info(f"📄 Número de recibo: **{num_recibo}**")
+num_mes = str(meses.index(mes_cancelado) + 1).zfill(2)
+casa_num = num_casa.split()[-1] if "Casa" in num_casa else num_casa
+num_recibo = f"VV-{num_mes}-{anio_cancelado}-{casa_num}"
 
-# Botón para generar recibo
-if st.button("🖨️ GENERAR RECIBO", use_container_width=True):
-    if not propietario:
-        st.error("❌ Debe ingresar un propietario")
-    elif not num_casa:
-        st.error("❌ Debe ingresar un número de casa")
-    elif monto_pago <= 0:
-        st.error("❌ Debe ingresar un monto válido")
+st.markdown('<div class="section-title">Número de Recibo (Generado automáticamente)</div>', unsafe_allow_html=True)
+st.text_input("", value=num_recibo, disabled=True, label_visibility="collapsed", key="num_recibo_display")
+
+st.markdown("---")
+
+# Botón de generar recibo
+if st.button("📄 GENERAR RECIBO", use_container_width=True):
+    if not propietario or not num_casa or monto <= 0:
+        st.error("⚠️ Por favor complete todos los campos obligatorios")
     else:
-        # Crear imagen del recibo
-        ancho, alto = 850, 1100
-        img = Image.new('RGB', (ancho, alto), 'white')
+        # Crear recibo
+        img_width = 800
+        img_height = 1000
+        img = Image.new('RGB', (img_width, img_height), 'white')
         draw = ImageDraw.Draw(img)
         
-        # Agregar borde
-        draw.rectangle([(20, 20), (ancho-20, alto-20)], outline='black', width=3)
+        try:
+            # Intentar cargar fuentes
+            font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 24)
+            font_header = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
+            font_normal = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 11)
+        except:
+            font_title = ImageFont.load_default()
+            font_header = ImageFont.load_default()
+            font_normal = ImageFont.load_default()
+            font_small = ImageFont.load_default()
         
-        y_pos = 50
+        y_pos = 30
         
         # Logo si existe
-        if st.session_state.logo_img:
-            logo_resized = st.session_state.logo_img.copy()
-            logo_resized.thumbnail((120, 120))
-            img.paste(logo_resized, (50, y_pos))
-            y_pos += 140
+        if logo_file:
+            logo = Image.open(logo_file)
+            logo.thumbnail((150, 150))
+            logo_x = (img_width - logo.width) // 2
+            img.paste(logo, (logo_x, y_pos))
+            y_pos += logo.height + 20
         
         # Encabezado del condominio
-        draw.text((ancho//2, y_pos), "ASOCIACIÓN CIVIL VALLE VERDE", 
-                 fill='black', anchor='mt', font=None)
-        y_pos += 25
-        
-        draw.text((ancho//2, y_pos), "RIF: J-298826738", 
-                 fill='black', anchor='mt', font=None)
-        y_pos += 25
-        
-        draw.text((ancho//2, y_pos), "Calle Trave N° 19, Valle Verde", 
-                 fill='black', anchor='mt', font=None)
-        y_pos += 20
-        
-        draw.text((ancho//2, y_pos), "Morita 1, Turmero, Estado Aragua", 
-                 fill='black', anchor='mt', font=None)
+        draw.text((img_width//2, y_pos), "ASOCIACIÓN CIVIL VALLE VERDE", 
+                  fill='black', font=font_title, anchor="mm")
         y_pos += 40
         
+        draw.text((img_width//2, y_pos), "RIF: J-298826738", 
+                  fill='black', font=font_normal, anchor="mm")
+        y_pos += 25
+        
+        direccion = "Calle Trave N° 19, Valle Verde, Morita 1"
+        draw.text((img_width//2, y_pos), direccion, 
+                  fill='black', font=font_small, anchor="mm")
+        y_pos += 20
+        
+        draw.text((img_width//2, y_pos), "Turmero, Estado Aragua", 
+                  fill='black', font=font_small, anchor="mm")
+        y_pos += 40
+        
+        # Línea separadora
+        draw.line([(50, y_pos), (img_width-50, y_pos)], fill='black', width=2)
+        y_pos += 30
+        
         # Título RECIBO
-        draw.text((ancho//2, y_pos), "RECIBO DE PAGO", 
-                 fill='black', anchor='mt', font=None)
+        draw.text((img_width//2, y_pos), "RECIBO DE PAGO", 
+                  fill='black', font=font_header, anchor="mm")
         y_pos += 40
         
         # Número de recibo
-        draw.text((ancho//2, y_pos), f"N° {num_recibo}", 
-                 fill='black', anchor='mt', font=None)
+        draw.text((100, y_pos), f"Recibo N°: {num_recibo}", 
+                  fill='black', font=font_normal)
+        y_pos += 35
+        
+        # Fecha
+        draw.text((100, y_pos), f"Fecha: {dia_pago} de {mes_cancelado} de {anio_cancelado}", 
+                  fill='black', font=font_normal)
         y_pos += 50
         
-        # Datos del recibo
-        margen_izq = 80
-        
-        draw.text((margen_izq, y_pos), f"Fecha: {dia_pago:02d}/{mes_num}/{anio_cancelado}", 
-                 fill='black', font=None)
+        # Datos del pago
+        draw.text((100, y_pos), f"Recibido de:", fill='black', font=font_header)
+        y_pos += 30
+        draw.text((120, y_pos), f"{propietario}", fill='black', font=font_normal)
         y_pos += 35
         
-        draw.text((margen_izq, y_pos), f"Propietario: {propietario}", 
-                 fill='black', font=None)
-        y_pos += 35
-        
-        draw.text((margen_izq, y_pos), f"Casa N°: {num_casa}", 
-                 fill='black', font=None)
-        y_pos += 35
-        
-        draw.text((margen_izq, y_pos), f"Concepto: Cuota de condominio", 
-                 fill='black', font=None)
-        y_pos += 35
-        
-        draw.text((margen_izq, y_pos), f"Mes cancelado: {mes_cancelado} {anio_cancelado}", 
-                 fill='black', font=None)
+        draw.text((100, y_pos), f"Casa N°: {num_casa}", fill='black', font=font_normal)
         y_pos += 50
         
-        # Monto
-        draw.text((margen_izq, y_pos), f"Monto: Bs. {monto_pago:,.2f}", 
-                 fill='black', font=None)
+        draw.text((100, y_pos), f"La cantidad de:", fill='black', font=font_header)
+        y_pos += 30
+        draw.text((120, y_pos), f"Bs. {monto:,.2f}", fill='black', font=font_normal)
         y_pos += 50
         
-        # Referencia
-        if referencia_pago:
-            draw.text((margen_izq, y_pos), f"Referencia: {referencia_pago}", 
-                     fill='black', font=None)
-            y_pos += 50
+        draw.text((100, y_pos), f"Por concepto de:", fill='black', font=font_header)
+        y_pos += 30
+        draw.text((120, y_pos), f"Cuota de condominio - {mes_cancelado} {anio_cancelado}", 
+                  fill='black', font=font_normal)
+        y_pos += 50
+        
+        draw.text((100, y_pos), f"Referencia: {referencia}", fill='black', font=font_normal)
+        y_pos += 60
         
         # Recibido por
-        y_pos += 30
-        draw.text((margen_izq, y_pos), f"Recibido por: {recibido_por}", 
-                 fill='black', font=None)
-        y_pos += 40
+        draw.line([(100, y_pos), (400, y_pos)], fill='black', width=1)
+        y_pos += 5
+        draw.text((100, y_pos), "Recibido por: Eleida Ontiveros", 
+                  fill='black', font=font_normal)
+        y_pos += 80
         
-        draw.line([(margen_izq, y_pos), (ancho - margen_izq, y_pos)], fill='black', width=2)
-        y_pos += 10
-        draw.text((ancho//2, y_pos), "Firma", 
-                 fill='black', anchor='mt', font=None)
+        # Línea separadora
+        draw.line([(50, y_pos), (img_width-50, y_pos)], fill='#98D8C8', width=2)
+        y_pos += 30
         
         # Footer
-        y_pos = alto - 60
-        draw.text((ancho//2, y_pos), "Diseñado por Lic. Eduardo Canquiz", 
-                 fill='gray', anchor='mt', font=None)
+        draw.text((img_width//2, y_pos), "Diseñado por Lic. Eduardo Canquiz", 
+                  fill='#666666', font=font_small, anchor="mm")
         y_pos += 20
-        draw.text((ancho//2, y_pos), "04145875710", 
-                 fill='gray', anchor='mt', font=None)
+        draw.text((img_width//2, y_pos), "04145875710", 
+                  fill='#666666', font=font_small, anchor="mm")
         
-        # Convertir imagen a bytes para descarga
-        buffer = io.BytesIO()
-        img.save(buffer, format='PNG')
-        buffer.seek(0)
+        # Convertir a bytes para descarga
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        
+        st.success("✓ Recibo generado exitosamente")
         
         # Mostrar preview
-        st.success("✅ Recibo generado exitosamente")
         st.image(img, caption="Vista previa del recibo", use_container_width=True)
         
         # Botón de descarga
         st.download_button(
-            label="📥 DESCARGAR RECIBO",
-            data=buffer,
+            label="⬇️ DESCARGAR RECIBO",
+            data=buf,
             file_name=f"Recibo_{num_recibo}.png",
             mime="image/png",
             use_container_width=True
         )
 
 # Footer
-st.markdown("""
-    <div class="footer">
-        <p>Diseñado por Lic. Eduardo Canquiz | 04145875710</p>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown(
+    '<div class="footer">Diseñado por Lic. Eduardo Canquiz • 04145875710</div>',
+    unsafe_allow_html=True
+)
