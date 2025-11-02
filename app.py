@@ -99,15 +99,27 @@ def generar_pdf(datos):
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
     
-    # Logo si existe
-    y_position = height - 80
-    if st.session_state.logo:
-        try:
-            logo_reader = ImageReader(st.session_state.logo)
-            c.drawImage(logo_reader, 50, y_position, width=100, height=60, preserveAspectRatio=True)
-            y_position -= 20
-        except:
-            pass
+# Logo y encabezado alineados
+y_position = height - 100
+if st.session_state.logo:
+    try:
+        logo_reader = ImageReader(st.session_state.logo)
+        c.drawImage(logo_reader, 50, y_position - 10, width=90, height=60, preserveAspectRatio=True)
+    except:
+        pass
+
+# Encabezado del condominio (alineado con logo)
+c.setFont("Helvetica-Bold", 16)
+c.drawString(160, y_position + 30, "Asociación Civil Valle Verde")
+
+c.setFont("Helvetica", 10)
+c.drawString(160, y_position + 15, "Calle 7 N° 79, Valle Verde, Morita 1")
+c.drawString(160, y_position, "Turmero, Estado Aragua")
+c.drawString(160, y_position - 15, "RIF: J-298826738")
+
+# Línea separadora
+y_position -= 40
+c.line(50, y_position, width - 50, y_position)
     
     # Encabezado del condominio
     c.setFont("Helvetica-Bold", 16)
@@ -260,18 +272,16 @@ with col1:
 
 with col2:
     st.markdown("#### Número de Casa")
-    opciones_casa = ["Escribir manualmente..."] + sorted(st.session_state.propietarios.keys(), key=lambda x: int(x) if x.isdigit() else x)
-    casa_seleccion = st.selectbox(
-        "Seleccione o escriba el número",
-        opciones_casa,
-        key="casa_select",
-        label_visibility="collapsed"
-    )
-    
-    if casa_seleccion == "Escribir manualmente...":
-        numero_casa = st.text_input("Número de casa", key="casa_manual", placeholder="Ej: 25")
+
+    # Si el propietario existe en la lista, buscar su número de casa automáticamente
+    if propietario in st.session_state.propietarios.values():
+        numero_casa = next(
+            (casa for casa, nombre in st.session_state.propietarios.items() if nombre == propietario),
+            ""
+        )
+        st.info(f"🏠 Casa asignada automáticamente: {numero_casa}")
     else:
-        numero_casa = casa_seleccion
+        numero_casa = st.text_input("Número de casa", key="casa_manual", placeholder="Ej: 25")
 
 # Fila 2: Mes y Año
 col3, col4 = st.columns(2)
