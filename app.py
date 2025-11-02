@@ -161,7 +161,7 @@ def generar_pdf(datos):
 
     y_position -= 30
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(70, y_position, f"Monto Pagado: Bs. {datos['monto_pago']}")
+    c.drawString(70, y_position, f"Monto Pagado: {datos['monto_pago']}")
 
     if datos.get('referencia'):
         y_position -= 25
