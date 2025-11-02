@@ -1,11 +1,30 @@
 import streamlit as st
 from datetime import datetime
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
 from io import BytesIO
-from PIL import Image
-import os
+
+try:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.utils import ImageReader
+    from PIL import Image
+except ImportError as e:
+    st.error("""
+    ⚠️ **Error de dependencias**
+    
+    Por favor instala los paquetes necesarios:
+    
+    ```bash
+    pip install reportlab Pillow
+    ```
+    
+    O crea un archivo `requirements.txt` con:
+    ```
+    streamlit
+    reportlab
+    Pillow
+    ```
+    """)
+    st.stop()
 
 # Configuración de la página
 st.set_page_config(
@@ -109,7 +128,7 @@ def generar_pdf(datos):
     # Título del recibo
     y_position -= 40
     c.setFont("Helvetica-Bold", 18)
-    c.drawCentred(width / 2, y_position, "RECIBO DE PAGO")
+    c.drawCentredString(width / 2, y_position, "RECIBO DE PAGO")
     
     # Número de recibo
     y_position -= 30
@@ -161,7 +180,7 @@ def generar_pdf(datos):
     # Nota al pie
     y_position = 50
     c.setFont("Helvetica-Oblique", 8)
-    c.drawCentred(width / 2, y_position, "Gracias por su pago puntual")
+    c.drawCentredString(width / 2, y_position, "Gracias por su pago puntual")
     
     c.save()
     buffer.seek(0)
