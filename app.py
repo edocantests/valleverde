@@ -78,6 +78,8 @@ if 'propietarios' not in st.session_state:
     st.session_state.propietarios = {}
 if 'logo' not in st.session_state:
     st.session_state.logo = None
+if '_syncing' not in st.session_state:
+    st.session_state['_syncing'] = False
 
 # Función para cargar propietarios desde TXT
 def cargar_propietarios_txt(archivo):
@@ -87,7 +89,10 @@ def cargar_propietarios_txt(archivo):
         for linea in contenido.strip().split('\n'):
             if ',' in linea:
                 casa, nombre = linea.split(',', 1)
-                propietarios[casa.strip()] = nombre.strip()
+                casa = casa.strip()
+                nombre = nombre.strip()
+                if casa:
+                    propietarios[casa] = nombre
         return propietarios
     except Exception as e:
         st.error(f"Error al cargar el archivo: {e}")
@@ -98,90 +103,110 @@ def generar_pdf(datos):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-    
-    # Logo si existe
-    y_position = height - 80
+
+    # Top margin
+    top_margin = height - 30
+
+    # Prepare positions depending on logo
+    header_y = top_margin - 10  # default
+    logo_drawn = False
+
     if st.session_state.logo:
         try:
-            logo_reader = ImageReader(st.session_state.logo)
-            c.drawImage(logo_reader, 50, y_position, width=100, height=60, preserveAspectRatio=True)
-            y_position -= 20
-        except:
-            pass
-    
+            img = st.session_state.logo.convert("RGBA")
+            iw, ih = img.size  # original pixels
+            desired_w = 100.0
+            scale = desired_w / float(iw)
+            desired_h = float(ih) * scale
+            logo_x = 50
+            logo_y = top_margin - desired_h  # y-coordinate where logo bottom will be
+
+            logo_reader = ImageReader(img)
+            # draw the image
+            c.drawImage(logo_reader, logo_x, logo_y, width=desired_w, height=desired_h, preserveAspectRatio=True, mask='auto')
+            logo_drawn = True
+
+            # center header vertically with logo
+            header_y = logo_y + desired_h / 2 + 6
+            # ensure header_y doesn't go too high/low
+            header_y = min(header_y, top_margin - 6)
+        except Exception:
+            # fallback to default header_y
+            header_y = top_margin - 10
+
     # Encabezado del condominio
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(200, y_position, "Asociación Civil Valle Verde")
-    
+    c.drawString(200, header_y, "Asociación Civil Valle Verde")
+
     c.setFont("Helvetica", 10)
-    y_position -= 20
+    y_position = header_y - 20
     c.drawString(200, y_position, "Calle 7 N° 79, Valle Verde, Morita 1")
     y_position -= 15
     c.drawString(200, y_position, "Turmero, Estado Aragua")
     y_position -= 15
     c.drawString(200, y_position, "RIF: J-298826738")
-    
+
     # Línea separadora
     y_position -= 30
     c.line(50, y_position, width - 50, y_position)
-    
+
     # Título del recibo
     y_position -= 40
     c.setFont("Helvetica-Bold", 18)
     c.drawCentredString(width / 2, y_position, "RECIBO DE PAGO")
-    
+
     # Número de recibo
     y_position -= 30
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, y_position, f"Recibo N°: {datos['numero_recibo']}")
-    
+    c.drawString(50, y_position, f"Recibo N°: {datos.get('numero_recibo','')}")
+
     # Información del recibo
     y_position -= 40
     c.setFont("Helvetica-Bold", 11)
     c.drawString(50, y_position, "Datos del Pago:")
-    
+
     y_position -= 25
     c.setFont("Helvetica", 11)
-    c.drawString(70, y_position, f"Propietario: {datos['propietario']}")
-    
+    c.drawString(70, y_position, f"Propietario: {datos.get('propietario','')}")
+
     y_position -= 20
-    c.drawString(70, y_position, f"Casa N°: {datos['numero_casa']}")
-    
+    c.drawString(70, y_position, f"Casa N°: {datos.get('numero_casa','')}")
+
     y_position -= 20
-    c.drawString(70, y_position, f"Fecha de Pago: {datos['dia_pago']}")
-    
+    c.drawString(70, y_position, f"Fecha de Pago: {datos.get('dia_pago','')}")
+
     y_position -= 20
-    c.drawString(70, y_position, f"Mes Cancelado: {datos['mes_cancelado']}")
-    
+    c.drawString(70, y_position, f"Mes Cancelado: {datos.get('mes_cancelado','')}")
+
     y_position -= 20
-    c.drawString(70, y_position, f"Año Cancelado: {datos['año_cancelado']}")
-    
+    c.drawString(70, y_position, f"Año Cancelado: {datos.get('año_cancelado','')}")
+
     y_position -= 30
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(70, y_position, f"Monto Pagado: Bs. {datos['monto_pago']}")
-    
-    if datos['referencia']:
+    c.drawString(70, y_position, f"Monto Pagado: Bs. {datos.get('monto_pago','')}")
+
+    if datos.get('referencia'):
         y_position -= 25
         c.setFont("Helvetica", 11)
-        c.drawString(70, y_position, f"Referencia: {datos['referencia']}")
-    
+        c.drawString(70, y_position, f"Referencia: {datos.get('referencia')}")
+
     # Recibido por
     y_position -= 40
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(70, y_position, f"Recibido por: {datos['recibido_por']}")
-    
+    c.drawString(70, y_position, f"Recibido por: {datos.get('recibido_por','')}")
+
     # Línea de firma
     y_position -= 60
     c.line(70, y_position, 300, y_position)
     y_position -= 15
     c.setFont("Helvetica", 9)
     c.drawString(70, y_position, "Firma y Sello")
-    
+
     # Nota al pie
-    y_position = 50
+    footer_y = 50
     c.setFont("Helvetica-Oblique", 8)
-    c.drawCentredString(width / 2, y_position, "Gracias por su pago puntual")
-    
+    c.drawCentredString(width / 2, footer_y, "Gracias por su pago puntual")
+
     c.save()
     buffer.seek(0)
     return buffer
@@ -199,8 +224,11 @@ with col1:
     st.markdown("#### Logo del Condominio")
     logo_file = st.file_uploader("Cargar logo (PNG/JPG)", type=['png', 'jpg', 'jpeg'], key="logo_upload")
     if logo_file:
-        st.session_state.logo = Image.open(logo_file)
-        st.image(st.session_state.logo, width=150)
+        try:
+            st.session_state.logo = Image.open(logo_file)
+            st.image(st.session_state.logo, width=150)
+        except Exception as e:
+            st.error(f"Error al leer la imagen: {e}")
 
 with col2:
     st.markdown("#### Lista de Propietarios")
@@ -225,9 +253,9 @@ with col_c:
     st.write("")
     if st.button("➕ Agregar"):
         if nueva_casa and nuevo_nombre:
-            st.session_state.propietarios[nueva_casa] = nuevo_nombre
+            st.session_state.propietarios[str(nueva_casa).strip()] = nuevo_nombre.strip()
             st.success("✅ Propietario agregado")
-            st.rerun()
+            st.experimental_rerun()
 
 # Mostrar propietarios cargados
 if st.session_state.propietarios:
@@ -243,42 +271,74 @@ st.markdown('<div class="section-header">🧾 GENERAR RECIBO</div>', unsafe_allo
 # Fila 1: Propietario y Casa
 col1, col2 = st.columns(2)
 
+# prepare ordered lists
+def sort_key(x):
+    return int(x) if str(x).isdigit() else str(x)
+
+propietario_list = ["Escribir manualmente..."] + [v for k, v in sorted(st.session_state.propietarios.items(), key=lambda x: sort_key(x[0]))]
+casa_list = ["Escribir manualmente..."] + [k for k in sorted(st.session_state.propietarios.keys(), key=sort_key)]
+
 with col1:
     st.markdown("#### Propietario")
-    opciones_propietario = ["Escribir manualmente..."] + list(st.session_state.propietarios.values())
     propietario_seleccion = st.selectbox(
         "Seleccione o escriba el nombre",
-        opciones_propietario,
+        propietario_list,
         key="propietario_select",
         label_visibility="collapsed"
     )
-    
     if propietario_seleccion == "Escribir manualmente...":
-        propietario = st.text_input("Nombre del propietario", key="propietario_manual", placeholder="Escriba el nombre")
+        propietario_manual = st.text_input("Nombre del propietario", key="propietario_manual", placeholder="Escriba el nombre")
     else:
-        propietario = propietario_seleccion
+        propietario_manual = ""  # clear manual field for clarity
 
 with col2:
     st.markdown("#### Número de Casa")
-    opciones_casa = ["Escribir manualmente..."] + sorted(st.session_state.propietarios.keys(), key=lambda x: int(x) if x.isdigit() else x)
     casa_seleccion = st.selectbox(
         "Seleccione o escriba el número",
-        opciones_casa,
+        casa_list,
         key="casa_select",
         label_visibility="collapsed"
     )
-    
     if casa_seleccion == "Escribir manualmente...":
-        numero_casa = st.text_input("Número de casa", key="casa_manual", placeholder="Ej: 25")
+        casa_manual = st.text_input("Número de casa", key="casa_manual", placeholder="Ej: 25")
     else:
-        numero_casa = casa_seleccion
+        casa_manual = ""
+
+# Sincronización bidireccional (Propietario <-> Casa)
+if not st.session_state['_syncing']:
+    st.session_state['_syncing'] = True
+    try:
+        # Si seleccionaron propietario desde la lista, buscar la casa y actualizar la selectbox de casa
+        if propietario_seleccion != "Escribir manualmente..." and propietario_seleccion:
+            found_casa = next((k for k, v in st.session_state.propietarios.items() if v == propietario_seleccion), None)
+            if found_casa:
+                # actualizamos el value de la caja casa_select
+                st.session_state['casa_select'] = found_casa
+        # Si seleccionaron casa desde la lista, buscar el propietario y actualizar la selectbox de propietario
+        if casa_seleccion != "Escribir manualmente..." and casa_seleccion:
+            owner = st.session_state.propietarios.get(casa_seleccion)
+            if owner:
+                st.session_state['propietario_select'] = owner
+    finally:
+        st.session_state['_syncing'] = False
+
+# Determinar valores finales para propietario y numero_casa (ya sincronizados)
+if st.session_state.get('propietario_select') and st.session_state['propietario_select'] != "Escribir manualmente...":
+    propietario = st.session_state['propietario_select']
+else:
+    propietario = st.session_state.get('propietario_manual', '').strip()
+
+if st.session_state.get('casa_select') and st.session_state['casa_select'] != "Escribir manualmente...":
+    numero_casa = st.session_state['casa_select']
+else:
+    numero_casa = st.session_state.get('casa_manual', '').strip()
 
 # Fila 2: Mes y Año
 col3, col4 = st.columns(2)
 
 with col3:
     st.markdown("#### Mes Cancelado")
-    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+    meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
              "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
     mes_cancelado = st.selectbox("Seleccione el mes", meses, label_visibility="collapsed")
 
@@ -305,7 +365,8 @@ referencia = st.text_input("Número de referencia o método de pago", placeholde
 # Recibido por (fijo)
 recibido_por = "Eleida Ontiveros"
 
-# Generar número de recibo automáticamente
+# Generar número de recibo automáticamente (si hay casa, mes y año)
+numero_recibo = ""
 if numero_casa and mes_cancelado and año_cancelado:
     mes_num = str(meses.index(mes_cancelado) + 1).zfill(2)
     numero_recibo = f"VV-{mes_num}-{año_cancelado}-{numero_casa}"
