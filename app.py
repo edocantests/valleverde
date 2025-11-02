@@ -93,33 +93,32 @@ def cargar_propietarios_txt(archivo):
         st.error(f"Error al cargar el archivo: {e}")
         return {}
 
-# Función para generar PDF
 def generar_pdf(datos):
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
-    
-# Logo y encabezado alineados
-y_position = height - 100
-if st.session_state.logo:
-    try:
-        logo_reader = ImageReader(st.session_state.logo)
-        c.drawImage(logo_reader, 50, y_position - 10, width=90, height=60, preserveAspectRatio=True)
-    except:
-        pass
 
-# Encabezado del condominio (alineado con logo)
-c.setFont("Helvetica-Bold", 16)
-c.drawString(160, y_position + 30, "Asociación Civil Valle Verde")
+    # Logo y encabezado alineados
+    y_position = height - 100
+    if st.session_state.logo:
+        try:
+            logo_reader = ImageReader(st.session_state.logo)
+            c.drawImage(logo_reader, 50, y_position - 10, width=90, height=60, preserveAspectRatio=True)
+        except:
+            pass
 
-c.setFont("Helvetica", 10)
-c.drawString(160, y_position + 15, "Calle 7 N° 79, Valle Verde, Morita 1")
-c.drawString(160, y_position, "Turmero, Estado Aragua")
-c.drawString(160, y_position - 15, "RIF: J-298826738")
+    # Encabezado del condominio (alineado con logo)
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(160, y_position + 30, "Asociación Civil Valle Verde")
 
-# Línea separadora
-y_position -= 40
-c.line(50, y_position, width - 50, y_position)
+    c.setFont("Helvetica", 10)
+    c.drawString(160, y_position + 15, "Calle 7 N° 79, Valle Verde, Morita 1")
+    c.drawString(160, y_position, "Turmero, Estado Aragua")
+    c.drawString(160, y_position - 15, "RIF: J-298826738")
+
+    # Línea separadora
+    y_position -= 40
+    c.line(50, y_position, width - 50, y_position)
     
     # Encabezado del condominio
     c.setFont("Helvetica-Bold", 16)
