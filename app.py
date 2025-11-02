@@ -189,7 +189,7 @@ def generar_recibo():
         x_texto = 50
     
     # Encabezado
-    draw.text((x_texto, y_pos), "ASOCIACIÓN CIVIL VALLE VERDE", fill='black', font=fuente_titulo)
+    draw.text((x_texto, y_pos), "ASOCIACION CIVIL VALLE VERDE", fill='black', font=fuente_titulo)
     y_pos += 30
     draw.text((x_texto, y_pos), "Calle 7 N° 79, Valle Verde, Morita 1", fill='black', font=fuente_pequena)
     y_pos += 20
@@ -217,7 +217,7 @@ def generar_recibo():
     y_pos += 30
     draw.text((50, y_pos), f"Fecha de Pago: {dia_pago:02d}/{mes_num:02d}/{año_cancelado}", fill='black', font=fuente_normal)
     y_pos += 30
-    draw.text((50, y_pos), f"Período Cancelado: {mes_cancelado} {año_cancelado}", fill='black', font=fuente_normal)
+    draw.text((50, y_pos), f"Periodo Cancelado: {mes_cancelado} {año_cancelado}", fill='black', font=fuente_normal)
     y_pos += 40
     
     # Línea divisoria
@@ -233,17 +233,12 @@ def generar_recibo():
         y_pos += 40
     
     # Línea divisoria
-    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='black', width=2)
+    draw.line([(50, y_pos), (ancho-50, y_pos)], fill='gray', width=1)
     y_pos += 40
     
     # Recibido por
     draw.text((50, y_pos), f"Recibido por: {recibido_por}", fill='black', font=fuente_normal)
     y_pos += 80
-    
-    # Firma
-    draw.line([(50, y_pos), (300, y_pos)], fill='black', width=1)
-    y_pos += 10
-    draw.text((50, y_pos), "Firma y Sello", fill='black', font=fuente_pequena)
     
     return recibo
 
