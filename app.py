@@ -343,7 +343,7 @@ if st.button("📥 GENERAR Y DESCARGAR RECIBO PDF", use_container_width=True):
             'mes_cancelado': mes_cancelado,
             'año_cancelado': año_cancelado,
             'recibido_por': recibido_por,
-            'referencia': referencia
+            'referencia': referencia,
             'nota': Nota adicional
         }
         
