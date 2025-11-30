@@ -168,6 +168,11 @@ def generar_pdf(datos):
         c.setFont("Helvetica", 11)
         c.drawString(70, y_position, f"Referencia: {datos['referencia']}")
 
+    if datos.get('Nota'):
+        y_position -= 25
+        c.setFont("Helvetica", 11)
+        c.drawString(70, y_position, f"Nota: {datos['Nota']}")
+    
     # Recibido por
     y_position -= 40
     c.setFont("Helvetica-Bold", 11)
@@ -303,6 +308,9 @@ with col6:
 # Fila 4: Referencia
 st.markdown("#### Referencia del Pago")
 referencia = st.text_input("Número de referencia o método de pago", placeholder="Ej: Transferencia 123456789", label_visibility="collapsed")
+
+st.markdown("#### Nota")
+Nota = st.text_input("Nota del pago", placeholder="ingrese detalles", label_visibility="collapsed")
 
 # Recibido por (fijo)
 recibido_por = "Eleida Ontiveros"
