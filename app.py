@@ -344,7 +344,7 @@ if st.button("📥 GENERAR Y DESCARGAR RECIBO PDF", use_container_width=True):
             'año_cancelado': año_cancelado,
             'recibido_por': recibido_por,
             'referencia': referencia,
-            'nota': Nota adicional
+            'nota': nota
         }
         
         pdf = generar_pdf(datos_recibo)
