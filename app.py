@@ -286,7 +286,7 @@ with col3:
 
 with col4:
     st.markdown("#### Año Cancelado")
-    años = list(range(2025, 2031))
+    años = list(range(2020, 2031))
     año_cancelado = st.selectbox("Seleccione el año", años, label_visibility="collapsed")
 
 # Fila 3: Día y Monto
